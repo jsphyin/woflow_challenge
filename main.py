@@ -1,5 +1,6 @@
-import requests
+from collections import defaultdict
 import heapq
+import requests
 
 ID_KEY = "id"
 CHILD_NODE_KEY = 'child_node_ids'
@@ -13,9 +14,15 @@ def is_invalid_node(node_info):
     return ID_KEY not in node_info or CHILD_NODE_KEY not in node_info
 
 
+def get_children_node_info(children_nodes):
+    children_ids = ','.join(children_nodes)
+
+    return request_node_info(id=children_ids).json()
+
+
 def traverse_nodes(node_info):
     queue = [node_info]
-    node_dict = {}
+    node_dict = defaultdict(int)
 
     while queue:
         node = queue.pop(0)
@@ -24,15 +31,10 @@ def traverse_nodes(node_info):
             continue
 
         node_id = node[ID_KEY]
-        if node_id in node_dict:
-            node_dict[node_id] += 1
-        else:
-            node_dict[node_id] = 1
+        node_dict[node_id] += 1
 
         if node[CHILD_NODE_KEY]:
-            children_ids = ','.join(node[CHILD_NODE_KEY])
-
-            child_response = request_node_info(id=children_ids).json()
+            child_response = get_children_node_info(node[CHILD_NODE_KEY])
 
             for child in child_response:
                 if is_invalid_node(child):
@@ -45,6 +47,7 @@ def traverse_nodes(node_info):
                 queue.append(child)
     return node_dict
 
+
 def find_most_common_node(nodes_dict):
     heap = []
 
@@ -53,16 +56,19 @@ def find_most_common_node(nodes_dict):
 
     return heap[0]
 
+
 def main():
     node_response = request_node_info().json()
     if len(node_response) != 1:
         print("Initial node response returned more than one node")
+        return
     initial_node_info = node_response[0]
     nodes_dict = traverse_nodes(initial_node_info)
     most_common_node_occurrences, most_common_node_id = find_most_common_node(nodes_dict)
-    
+
     print(f"Unique node number is {len(nodes_dict.keys())}")
     print(f"Most common node id is {most_common_node_id} with {most_common_node_occurrences * -1} occurrences")
+
 
 if __name__ == "__main__":
     main()
