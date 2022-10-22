@@ -66,7 +66,7 @@ def main():
     nodes_dict = traverse_nodes(initial_node_info)
     most_common_node_occurrences, most_common_node_id = find_most_common_node(nodes_dict)
 
-    print(f"Unique node number is {len(nodes_dict.keys())}")
+    print(f"Total number of unique nodes is {len(nodes_dict.keys())}")
     print(f"Most common node id is {most_common_node_id} with {most_common_node_occurrences * -1} occurrences")
 
 
